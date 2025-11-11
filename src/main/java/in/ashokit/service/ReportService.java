@@ -4,5 +4,5 @@ import in.ashokit.dto.ReportFilterDto;
 
 public interface ReportService {
 
-    public byte[] generateReport(ReportFilterDto filterDto);
+    public byte[] generateReport(ReportFilterDto filterDto) throws Exception;
 }

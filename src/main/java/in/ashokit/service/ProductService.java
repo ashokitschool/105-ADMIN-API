@@ -10,7 +10,7 @@ public interface ProductService {
 
     public ProductDto createProduct(Integer categoryId, ProductDto productDto, MultipartFile productImage) throws IOException;
 
-    public ProductDto updateProduct(Integer productId, ProductDto productDto, MultipartFile productImage);
+    public ProductDto updateProduct(Integer productId, ProductDto productDto, MultipartFile productImage) throws IOException;
 
     public ProductDto deleteProduct(Integer productId);
 

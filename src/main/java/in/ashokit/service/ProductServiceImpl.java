@@ -64,22 +64,63 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDto updateProduct(Integer productId, ProductDto productDto, MultipartFile productImage) {
-        return null;
+    public ProductDto updateProduct(Integer productId, ProductDto productDto, MultipartFile productImage) throws IOException {
+
+        ProductEntity productEntity = productRepo.findById(productId).orElseThrow();
+        String filename = productImage.getOriginalFilename();
+        Path filePath = Paths.get(imagesUploadDir + filename);
+
+        // Create uploading dir if not available
+        if (!Files.exists(filePath.getParent())) {
+            try {
+                Files.createDirectories(filePath.getParent());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // copying file into target directory
+        Files.copy(productImage.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        // setting file path to DTO object
+        productDto.setImageUrl(filePath.toString());
+
+        productEntity.setUnitPrice(productDto.getUnitPrice());
+        productEntity.setName(productDto.getName());
+        productEntity.setTitle(productDto.getTitle());
+        productEntity.setActive(productDto.isActive());
+        productEntity.setDescription(productDto.getDescription());
+        productEntity.setImageUrl(productDto.getImageUrl());
+
+        productRepo.save(productEntity); // UPSERT
+
+        return ProductMapper.convertToDto(productEntity);
     }
 
     @Override
     public ProductDto deleteProduct(Integer productId) {
-        return null;
+
+        ProductEntity productEntity = productRepo.findById(productId).orElseThrow();
+        productEntity.setActive(false);
+        productRepo.save(productEntity);
+
+        return ProductMapper.convertToDto(productEntity);
     }
 
     @Override
     public ProductDto getProduct(Integer productId) {
-        return null;
+        ProductEntity productEntity = productRepo.findById(productId).orElseThrow();
+        return ProductMapper.convertToDto(productEntity);
     }
 
     @Override
     public List<ProductDto> getProductsByCategory(Integer categoryId) {
-        return List.of();
+
+        List<ProductEntity> productEntityList = productRepo.findByCategoryCategoryIdAndActive(categoryId, true);
+
+        return productEntityList.stream()
+                .map(ProductMapper::convertToDto)
+                .toList();
+
     }
 }
